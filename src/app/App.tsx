@@ -69,7 +69,10 @@ async function fetchRegion(): Promise<string | null> {
 
 async function fetchTrackPreview(title: string): Promise<TrackData> {
   try {
-    const res = await fetch(`/api/preview?q=${encodeURIComponent(title)}`);
+    const res = await fetch(`/api/preview?q=${encodeURIComponent(title)}`, {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return { found: false };
     return res.json();
   } catch { return { found: false }; }
 }
@@ -117,16 +120,17 @@ function AuroraBackground() {
 
 // ─── Scroll progress ──────────────────────────────────────────────────────────
 function ScrollProgress() {
-  const [pct, setPct] = useState(0);
+  const barRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const update = () => {
       const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
-      setPct(scrollHeight <= clientHeight ? 0 : (scrollTop / (scrollHeight - clientHeight)) * 100);
+      const pct = scrollHeight <= clientHeight ? 0 : (scrollTop / (scrollHeight - clientHeight)) * 100;
+      if (barRef.current) barRef.current.style.width = `${pct}%`;
     };
     window.addEventListener("scroll", update, { passive: true });
     return () => window.removeEventListener("scroll", update);
   }, []);
-  return <div className="fixed top-0 left-0 z-[60] h-[2px] pointer-events-none transition-all duration-100" style={{ width: `${pct}%`, background: "linear-gradient(90deg,#a855f7,#22d3ee,#86efac)" }} />;
+  return <div ref={barRef} className="fixed top-0 left-0 z-[60] h-[2px] pointer-events-none" style={{ width: "0%", background: "linear-gradient(90deg,#a855f7,#22d3ee,#86efac)" }} />;
 }
 
 // ─── Era Intro ────────────────────────────────────────────────────────────────
@@ -265,17 +269,22 @@ function JourneyCard({ video, isFeatured }: { video: YTVideo; isFeatured: boolea
     setEnded(false);
     if (!trackData) {
       setLoadingTrack(true);
-      const data = await fetchTrackPreview(video.title);
-      setTrackData(data);
-      setLoadingTrack(false);
-      if (data.previewUrl) {
-        const audio = new Audio(data.previewUrl);
-        audio.onended = () => { setIsPlaying(false); setEnded(true); };
-        audioRef.current = audio;
-        audio.play();
-        setIsPlaying(true);
-      } else {
+      try {
+        const data = await fetchTrackPreview(video.title);
+        setTrackData(data);
+        if (data.previewUrl) {
+          const audio = new Audio(data.previewUrl);
+          audio.onended = () => { setIsPlaying(false); setEnded(true); };
+          audioRef.current = audio;
+          audio.play().catch(() => setEnded(true));
+          setIsPlaying(true);
+        } else {
+          setEnded(true);
+        }
+      } catch {
         setEnded(true);
+      } finally {
+        setLoadingTrack(false);
       }
     } else if (trackData.previewUrl && !isPlaying) {
       const audio = new Audio(trackData.previewUrl);
@@ -785,3 +794,4 @@ export default function App() {
     </div>
   );
 }
+
