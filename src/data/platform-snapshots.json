@@ -1,4 +1,12 @@
 {
-  "instagram": { "followers": 127, "updatedAt": "2026-10-27", "source": "artist-provided" },
-  "spotify": { "monthlyListeners": 192, "updatedAt": "2026-10-27", "source": "verified-artist-profile" }
+  "instagram": {
+    "followers": 245,
+    "updatedAt": "2026-10-28",
+    "source": "artist-provided"
+  },
+  "spotify": {
+    "monthlyListeners": 192,
+    "updatedAt": "2026-10-28",
+    "source": "artist-provided"
+  }
 }

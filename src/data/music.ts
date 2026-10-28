@@ -23,7 +23,6 @@ export const RELEASES: Release[] = releases;
 
 export const ARTIST = {
   name: 'JXXMAL',
-  instagramFollowers: 127,
   spotifyUrl: 'https://open.spotify.com/artist/0pYbVdhffwzvHfEBdeFEUC',
   appleMusicUrl: 'https://music.apple.com/us/artist/jxxmal/1896724847',
   youtubeUrl: 'https://www.youtube.com/@JXXMALMUSIK',

@@ -157,7 +157,7 @@ function metricDate(metric: AudienceMetric) {
   const date = metric.updatedAt && new Date(metric.updatedAt);
   if (!date || !Number.isFinite(date.getTime())) return '';
   const label = new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(date);
-  return metric.automatic && !metric.stale ? `Updated ${label}` : `Saved count · ${label}`;
+  return metric.stale ? `Last updated ${label}` : `Updated ${label}`;
 }
 function PlatformGrid({ stats }: { stats: PlatformStats }) {
   const format = (value: number) => new Intl.NumberFormat('en').format(value);

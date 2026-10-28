@@ -2,7 +2,7 @@
 
 Official artist website for https://jxxmalmusik.com, built with React, Vite, Motion and Vercel functions.
 
-The shared release catalogue is `src/data/releases.json`. Update song links, artwork, preview clips and release metadata there. Platform counts use the server-side `/api/platforms` route. Instagram can update after Meta authorization; Spotify monthly listeners can update with Soundcharts production API access. Verified dated fallback counts are maintained in `src/data/platform-snapshots.json`. See `DEPLOYMENT.md` for activation and token renewal.
+The shared release catalogue is `src/data/releases.json`. Update song links, artwork, preview clips and release metadata there. YouTube subscribers update through the server-side `/api/platforms` route. Instagram followers and Spotify monthly listeners are maintained manually in `src/data/platform-snapshots.json` from the artist's updates, with a visible update date. No Instagram or Soundcharts authorization is needed. See `DEPLOYMENT.md` for the update workflow.
 
 ## Develop
 
