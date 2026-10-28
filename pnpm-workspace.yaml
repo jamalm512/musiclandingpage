@@ -4,3 +4,8 @@ overrides:
   vite: 6.3.5
   '@types/react': 18.3.27
   '@types/react-dom': 18.3.7
+
+# Reviewed native build tools; all other dependency scripts remain blocked.
+allowBuilds:
+  esbuild@0.25.10: true
+  '@tailwindcss/oxide@4.1.12': true
