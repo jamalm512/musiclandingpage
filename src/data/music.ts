@@ -31,3 +31,5 @@ export const ARTIST = {
   origin: 'Grenada',
   websiteUrl: 'https://jxxmalmusik.com',
 } as const;
+
+export const UPCOMING_RELEASE = { title: 'Big Bad Liar' } as const;
