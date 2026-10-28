@@ -26,7 +26,7 @@ function approximate(req, body) {
 export default async function handler(req, res) {
   res.setHeader('Allow', 'GET, POST');
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('Cache-Control', req.method === 'GET' ? 'public, s-maxage=60, stale-while-revalidate=120' : 'no-store');
+  res.setHeader('Cache-Control', 'private, no-store, max-age=0');
   if (!['GET', 'POST'].includes(req.method)) return res.status(405).json({ error: 'Method not allowed.' });
   if (req.method === 'POST' && !sameOrigin(req)) return res.status(403).json({ error: 'Please add your dot from the JXXMAL website.' });
   const key = process.env.SUPABASE_ANON_KEY?.trim();

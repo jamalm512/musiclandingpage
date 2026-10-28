@@ -2,17 +2,18 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode, RefObject } from 'react';
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'motion/react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { ArrowDown, ArrowRight, ArrowUpRight, Check, Copy, Disc3, Headphones, Menu, Pause, Play, Plus, Share2, X } from 'lucide-react';
+import { ArrowDown, ArrowUpRight, Check, Copy, Disc3, Headphones, Menu, Pause, Play, Plus, RotateCcw, Share2, X } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import { ARTIST, RELEASES } from '../data/music';
 import type { Release } from '../data/music';
 import snapshots from '../data/platform-snapshots.json';
 const FanMap = lazy(() => import('./components/FanMap'));
 import SignupForm from './components/SignupForm';
+import SonicIntro from './components/SonicIntro';
 import { ArtworkTilt, BounceArtwork, CinematicHeading, HeroAtmosphere, HeroHeadline, MotionControl, SpiceRibbon } from './components/SpiceMotion';
 import '../styles/site.css';
 
-const INTRO_KEY = 'jxxmal_intro_chapter1';
+const INTRO_KEY = 'jxxmal_intro_sonic_ignition_v1';
 const latest = RELEASES[RELEASES.length - 1];
 const EASE = [0.23, 1, 0.32, 1] as const;
 
@@ -90,16 +91,6 @@ function usePreviewPlayer() {
 }
 type Player = ReturnType<typeof usePreviewPlayer>;
 
-function EraIntro({ done }: { done: () => void }) {
-  const reduce = useReducedMotion();
-  useEffect(() => { if (reduce) { done(); return; } const timer = window.setTimeout(done, 2300); return () => window.clearTimeout(timer); }, [done, reduce]);
-  return <Dialog.Root open onOpenChange={(open) => { if (!open) done(); }}><Dialog.Portal><Dialog.Overlay className="intro-backdrop" /><Dialog.Content className="era-intro" onEscapeKeyDown={done}>
-    <div className="intro-rule" /><span className="eyebrow">GRENADA, WEST INDIES · 12.1° N / 61.7° W</span>
-    <Dialog.Title className="intro-title">CHAPTER <span>01</span></Dialog.Title>
-    <Dialog.Description>Every story starts somewhere. This one starts on the Spice Isle.</Dialog.Description>
-    <button className="intro-skip" onClick={done}>Enter JXXMAL’s world <ArrowRight size={16} /></button>
-  </Dialog.Content></Dialog.Portal></Dialog.Root>;
-}
 
 function MusicDialog({ track, close, returnFocus }: { track: Release | null; close: () => void; returnFocus: RefObject<HTMLElement> }) {
   const [links, setLinks] = useState<Record<string, string>>({});
@@ -237,9 +228,9 @@ function App() {
       <section className="circle-section section-shell" id="inner-circle" aria-labelledby="circle-title"><Reveal className="circle-layout"><div><span className="eyebrow">03 / CLOSER TO THE MUSIC</span><CinematicHeading id="circle-title" lines={['NOT JUST A LISTENER.', 'PART OF THE CIRCLE.']} accentLast /></div><div className="circle-details"><p>Unreleased sounds. The stories behind the songs.<br />First access to whatever comes next.</p><div className="circle-perks"><span>EARLY LISTENS</span><span>BEHIND THE SCENES</span><span>FIRST DROPS</span></div><SignupForm source="inner_circle" label="An open invitation. A closer connection." buttonLabel="I’m in" /></div></Reveal></section>
       <section className="world-section section-shell" aria-labelledby="world-title"><Reveal><div className="world-heading"><div><span className="eyebrow lime">04 / NO BORDERS ON A GOOD SOUND</span><CinematicHeading id="world-title" lines={['ONE ISLAND. NO LIMITS.']} /></div><span className="world-home"><i className="live-dot" /> ROOTED IN GRENADA</span></div><Suspense fallback={<div className="map-loading">Loading the world map…</div>}><FanMap /></Suspense></Reveal></section>
     </main>
-    <footer className="site-footer section-shell"><div className="footer-top"><a className="footer-wordmark" href="#" aria-label="Back to top">JXXMAL<span>®</span></a><p>FROM THE SPICE.<br />FOR THE WORLD.</p><button className="text-link" onClick={() => void share()}>Share the sound <Share2 size={15} /></button></div><div className="footer-bottom"><MotionControl /><span>© {new Date().getFullYear()} JXXMAL. ALL RIGHTS RESERVED.</span><a href={ARTIST.instagramUrl} target="_blank" rel="noopener noreferrer">@JXXMALMUSIK <ArrowUpRight size={12} /></a><a href="#main">BACK TO TOP ↑</a></div></footer>
+    <footer className="site-footer section-shell"><div className="footer-top"><a className="footer-wordmark" href="#" aria-label="Back to top">JXXMAL<span>®</span></a><p>FROM THE SPICE.<br />FOR THE WORLD.</p><button className="text-link" onClick={() => void share()}>Share the sound <Share2 size={15} /></button></div><div className="footer-bottom"><MotionControl /><button className="replay-intro" type="button" onClick={() => { player.stop(); window.scrollTo({ top: 0, behavior: 'instant' }); setIntro(true); }}><RotateCcw size={12} /> Replay intro</button><span>© {new Date().getFullYear()} JXXMAL. ALL RIGHTS RESERVED.</span><a href={ARTIST.instagramUrl} target="_blank" rel="noopener noreferrer">@JXXMALMUSIK <ArrowUpRight size={12} /></a><a href="#main">BACK TO TOP ↑</a></div></footer>
     <AnimatePresence>{currentTrack && (player.playing || player.loading) && <motion.div className="preview-bar" initial={{ opacity: 0, transform: 'translateY(12px)' }} animate={{ opacity: 1, transform: 'translateY(0)' }} exit={{ opacity: 0, transform: 'translateY(12px)' }} transition={{ duration: reduce ? 0 : 0.2, ease: EASE }}><img src={currentTrack.artwork} alt="" /><div className="preview-bar__info"><span>{currentTrack.title}</span><a href={currentTrack.appleMusicUrl!} target="_blank" rel="noopener noreferrer">{player.loading ? 'Loading preview…' : 'Preview via Apple Music ↗'}</a></div><button className="icon-button" onClick={() => player.stop()} aria-label="Pause audio preview"><Pause size={18} fill="currentColor" /></button><button className="icon-button" onClick={(event) => openServices(currentTrack, event.currentTarget)} aria-label={`Add ${currentTrack.title} to playlist`}><Plus size={19} /></button><div className="audio-progress" style={{ transform: `scaleX(${player.progress})` }} /></motion.div>}</AnimatePresence>
-    <MusicDialog track={services} close={() => setServices(null)} returnFocus={serviceOpener} />{intro && <EraIntro done={finishIntro} />}<Toaster theme="dark" position="bottom-center" closeButton toastOptions={{ style: { background: '#171916', color: '#f4f2ea', border: '1px solid #454a38', fontFamily: 'Outfit, sans-serif' } }} />
+    <MusicDialog track={services} close={() => setServices(null)} returnFocus={serviceOpener} />{intro && <SonicIntro done={finishIntro} />}<Toaster theme="dark" position="bottom-center" closeButton toastOptions={{ style: { background: '#171916', color: '#f4f2ea', border: '1px solid #454a38', fontFamily: 'Outfit, sans-serif' } }} />
   </MotionConfig>;
 }
 export default App;

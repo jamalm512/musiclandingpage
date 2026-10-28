@@ -15,7 +15,7 @@ test('map stores a hashed browser identifier and coarse Vercel area, with no IP,
  globalThis.fetch=async(url,options)=>{assert.equal(String(url),'https://example.supabase.co/rest/v1/rpc/jxxmal_place_audience_dot');body=JSON.parse(options.body);assert.equal(options.headers.apikey,'sb_publishable_test_only');assert.equal(options.headers.Authorization,undefined);return new Response(null,{status:204});};
  const result=res();await visitors(req({visitorId:id,locationSource:'approximate',email:'not-stored@example.com'},{'x-vercel-ip-latitude':'12.1165','x-vercel-ip-longitude':'-61.6790','x-vercel-ip-country':'GD','x-vercel-ip-city':'Private City','x-forwarded-for':'private ip'}),result);
  assert.deepEqual(body,{p_visitor_hash:createHash('sha256').update(id).digest('hex'),p_latitude:13,p_longitude:-61,p_country:'GD'});
- assert.deepEqual(result.body,{available:true,recorded:true,coordinates:[-61,13],approximate:true});assert.equal(result.headers['cache-control'],'no-store');assert.ok(!JSON.stringify(result.body).includes(id));
+ assert.deepEqual(result.body,{available:true,recorded:true,coordinates:[-61,13],approximate:true});assert.equal(result.headers['cache-control'],'private, no-store, max-age=0');assert.ok(!JSON.stringify(result.body).includes(id));
 });
 test('permission-based locations are rounded before storage and repeated browser updates use the same hash',async()=>{
  configured(); const writes=[];globalThis.fetch=async(_url,options)=>{writes.push(JSON.parse(options.body));return new Response(null,{status:204});};
@@ -33,7 +33,7 @@ test('map rejects invalid coordinates, source, identifiers, oversized strings an
 });
 test('shared map returns aggregate dots without database identifiers or private fields',async()=>{
  configured();globalThis.fetch=async(url,options)=>{assert.equal(String(url),'https://example.supabase.co/rest/v1/rpc/jxxmal_audience_map');assert.equal(options.body,'{}');return Response.json([{latitude:13,longitude:-61,visitors:2,visitor_hash:'never-expose',country:'GD'},{latitude:41,longitude:-73,visitors:'3'}, {latitude:100,longitude:0,visitors:3}]);};
- const result=res();await visitors({method:'GET'},result);assert.deepEqual(result.body,{available:true,points:[{coordinates:[-61,13],visitors:2},{coordinates:[-73,41],visitors:3}],totalVisitors:5,approximate:true});assert.ok(!JSON.stringify(result.body).includes('never-expose'));assert.match(result.headers['cache-control'],/s-maxage=60/);
+ const result=res();await visitors({method:'GET'},result);assert.deepEqual(result.body,{available:true,points:[{coordinates:[-61,13],visitors:2},{coordinates:[-73,41],visitors:3}],totalVisitors:5,approximate:true});assert.ok(!JSON.stringify(result.body).includes('never-expose'));assert.equal(result.headers['cache-control'],'private, no-store, max-age=0');
 });
 test('map failures remain unavailable without inventing saved visits or leaking upstream details',async()=>{
  configured();globalThis.fetch=async()=>Response.json({error:'private database endpoint failure'},{status:500});
