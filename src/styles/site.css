@@ -39,3 +39,5 @@ html[data-keyboard] .music-dialog{animation:none}html[data-keyboard] .record-fli
 @media(prefers-reduced-motion:reduce){.hero-world,.hero-description,.hero-ctas,.hero-origin{transition:none;opacity:1!important;transform:none!important}}
 
 .platform-card__updated{display:block;margin-top:8px;color:#a2a59a;font-size:10px;line-height:1.45;letter-spacing:.025em}.platform-card__detail{line-height:1.5}
+
+.bounce-copy h2.upcoming-release-title{font-size:clamp(70px,8.5vw,116px);line-height:.88;letter-spacing:-.025em}.upcoming-release-title>span{vertical-align:top}@media(max-width:580px){.bounce-copy h2.upcoming-release-title{font-size:clamp(76px,22vw,104px)}}

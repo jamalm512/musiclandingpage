@@ -7,6 +7,7 @@ type SignupFormProps = {
   label: string;
   buttonLabel?: string;
   className?: string;
+  releaseTitle?: string;
 };
 
 type FormStatus = "idle" | "pending" | "success" | "error";
@@ -16,6 +17,7 @@ export default function SignupForm({
   label,
   buttonLabel = "Join the circle",
   className = "",
+  releaseTitle = "the next release",
 }: SignupFormProps) {
   const id = useId();
   const [email, setEmail] = useState("");
@@ -76,7 +78,7 @@ export default function SignupForm({
       setEmail("");
       setMessage(
         source === "bounce_notify"
-          ? "You're on the list. You'll hear when Bounce drops."
+          ? `You're on the list. You'll hear when ${releaseTitle} drops.`
           : "You're in. Welcome to the Inner Circle.",
       );
     } catch (error) {

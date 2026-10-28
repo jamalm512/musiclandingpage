@@ -6,13 +6,14 @@ import { useReducedMotion } from 'motion/react';
 import './sonic-intro.css';
 
 const LOGO = '/jxxmal-chrome-logo.png';
-const SLICES = [
-  { x: '-45%', y: '29%', r: '-12deg', outX: '-95vw', outY: '25vh' },
-  { x: '-22%', y: '-64%', r: '16deg', outX: '-52vw', outY: '-74vh' },
-  { x: '16%', y: '62%', r: '-19deg', outX: '-18vw', outY: '86vh' },
-  { x: '-15%', y: '-52%', r: '14deg', outX: '24vw', outY: '-86vh' },
-  { x: '32%', y: '45%', r: '-13deg', outX: '58vw', outY: '75vh' },
-  { x: '53%', y: '-28%', r: '10deg', outX: '105vw', outY: '-28vh' },
+// Contours follow the lettering, rather than dividing its transparent canvas
+// into strips. The connected double-X stays together as the artist's emblem.
+const GLYPHS = [
+  { name: 'J', x: '-45%', y: '29%', r: '-12deg', outX: '-95vw', outY: '25vh', contour: 'polygon(0% 58%, 12.8% 58%, 13.2% 30%, 19.2% 30%, 19.2% 61%, 17.2% 70%, 12.5% 74%, 5% 72%, 0% 65%)' },
+  { name: 'XX', x: '-12%', y: '-64%', r: '16deg', outX: '-38vw', outY: '-74vh', contour: 'polygon(16.8% 20.5%, 23.6% 23%, 29.5% 40%, 35.7% 20.5%, 41.5% 36.5%, 49.5% 23.5%, 55.2% 20.5%, 44.4% 49.8%, 58% 86%, 50.6% 79%, 43.8% 63%, 37% 85%, 35.3% 85%, 28.7% 64%, 21% 80%, 13.4% 86%, 25.7% 50%)' },
+  { name: 'M', x: '16%', y: '62%', r: '-19deg', outX: '18vw', outY: '86vh', contour: 'polygon(51% 35%, 57.4% 38.7%, 61.5% 48.7%, 66% 38.5%, 68.5% 35.5%, 69.3% 37.5%, 69.3% 73%, 64% 73%, 64% 56%, 61.4% 63%, 57% 54%, 57% 73%, 52.5% 71%, 51% 45%)' },
+  { name: 'A', x: '32%', y: '-52%', r: '14deg', outX: '58vw', outY: '-75vh', contour: 'polygon(67% 73%, 75.7% 35%, 78% 35%, 86.3% 73%, 81.5% 73%, 79.5% 65%, 73% 65%, 70.5% 73%)' },
+  { name: 'L', x: '53%', y: '28%', r: '-10deg', outX: '105vw', outY: '28vh', contour: 'polygon(83.8% 30%, 90% 30%, 90% 59%, 100% 59%, 100% 67%, 96.5% 73%, 83.8% 73%)' },
 ];
 
 /** A first-visit brand moment; CSS keeps the sequence independent of page loading. */
@@ -59,7 +60,11 @@ export default function SonicIntro({ done }: { done: () => void }) {
         <div className="sonic-intro__shockwave" /><div className="sonic-intro__shockwave sonic-intro__shockwave--echo" />
         <div className="sonic-logo">
           <div className="sonic-logo__rail sonic-logo__rail--top" /><div className="sonic-logo__rail sonic-logo__rail--bottom" />
-          {artwork ? <>{SLICES.map((slice, index) => <div key={index} className="sonic-logo__slice" style={{ '--slice-x': slice.x, '--slice-y': slice.y, '--slice-r': slice.r, '--slice-out-x': slice.outX, '--slice-out-y': slice.outY, '--slice-delay': `${index * 28}ms`, clipPath: `inset(0 ${100 - (index + 1) * 100 / 6}% 0 ${index * 100 / 6}%)` } as CSSProperties}><img src={LOGO} alt="" width="2117" height="743" draggable={false} /></div>)}<div className="sonic-logo__reflection"><div /></div></> : ready ? <span className="sonic-logo__fallback">JXXMAL</span> : null}
+          {artwork ? <>
+            {GLYPHS.map((glyph, index) => <div key={glyph.name} className="sonic-logo__glyph" style={{ '--glyph-x': glyph.x, '--glyph-y': glyph.y, '--glyph-r': glyph.r, '--glyph-out-x': glyph.outX, '--glyph-out-y': glyph.outY, '--glyph-delay': `${index * 28}ms`, clipPath: glyph.contour } as CSSProperties}><img src={LOGO} alt="" width="2117" height="743" draggable={false} /></div>)}
+            <img className="sonic-logo__whole" src={LOGO} alt="" width="2117" height="743" draggable={false} />
+            <div className="sonic-logo__reflection"><div /></div>
+          </> : ready ? <span className="sonic-logo__fallback">JXXMAL</span> : null}
         </div>
         <div className="sonic-intro__sparks">{Array.from({ length: 16 }, (_, index) => <i key={index} style={{ '--spark-angle': `${index * 22.5 + 8}deg`, '--spark-delay': `${(index % 4) * 24}ms` } as CSSProperties} />)}</div>
         <div className="sonic-intro__chapter"><span>CHAPTER <b>01</b></span><i /><p>FROM THE SPICE. <strong>FOR THE WORLD.</strong></p></div>
