@@ -163,3 +163,5 @@ html[data-page-visibility="hidden"] .vinyl { animation-play-state: paused !impor
   .bounce-art .bounce-disc { animation: none; }
   .motion-control { display: none; }
 }
+
+.motion-control>span{display:inline-flex;align-items:center;justify-content:center}

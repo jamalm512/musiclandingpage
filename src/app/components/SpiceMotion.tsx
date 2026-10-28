@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PointerEvent, ReactNode, RefObject } from 'react';
 import { motion, useMotionTemplate, useReducedMotion, useSpring, useTransform } from 'motion/react';
 import './spice-motion.css';
+import { Pause, Play } from 'lucide-react';
+import SpiceMark from './SpiceMark';
 
 const SPRING = { mass: 1, stiffness: 100, damping: 10 };
 const clamp = (value: number, limit: number) => Math.max(-limit, Math.min(limit, value));
@@ -71,7 +73,7 @@ export function SpiceRibbon() {
   const root = useRef<HTMLDivElement>(null);
   useAnimationActivity(root);
   const phrases = ['GRENADA TO THE WORLD', 'DANCEHALL & BEYOND', 'INDEPENDENT. ALWAYS.', 'FROM THE SPICE'];
-  return <div ref={root} className="chapter-strip spice-ribbon" data-motion="paused" aria-hidden="true"><div className="spice-ribbon__track">{[0, 1].map((copy) => <div className="spice-ribbon__group" key={copy}>{phrases.map((phrase) => <span className="spice-ribbon__phrase" key={phrase}><span>{phrase}</span><i>✳</i></span>)}</div>)}</div></div>;
+  return <div ref={root} className="chapter-strip spice-ribbon" data-motion="paused" aria-hidden="true"><div className="spice-ribbon__track">{[0, 1].map((copy) => <div className="spice-ribbon__group" key={copy}>{phrases.map((phrase) => <span className="spice-ribbon__phrase" key={phrase}><span>{phrase}</span><i><SpiceMark /></i></span>)}</div>)}</div></div>;
 }
 
 export function BounceArtwork() {
@@ -105,7 +107,7 @@ export function MotionControl() {
     update();
     return () => { observer.disconnect(); document.removeEventListener('visibilitychange', update); delete document.documentElement.dataset.pageVisibility; };
   }, []);
-  return <button className="motion-control" type="button" aria-pressed={paused} onClick={() => setPaused(!paused)}><span aria-hidden="true">{paused ? '▷' : 'Ⅱ'}</span>{paused ? 'Resume ambient motion' : 'Pause ambient motion'}</button>;
+  return <button className="motion-control" type="button" aria-pressed={paused} onClick={() => setPaused(!paused)}><span aria-hidden="true">{paused ? <Play size={12} /> : <Pause size={12} />}</span>{paused ? 'Resume ambient motion' : 'Pause ambient motion'}</button>;
 }
 
 /** A quiet moving backdrop; it never captures input or changes document layout. */

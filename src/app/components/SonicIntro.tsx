@@ -6,15 +6,26 @@ import { useReducedMotion } from 'motion/react';
 import './sonic-intro.css';
 
 const LOGO = '/jxxmal-chrome-logo.png';
-// Contours follow the lettering, rather than dividing its transparent canvas
-// into strips. The connected double-X stays together as the artist's emblem.
-const GLYPHS = [
-  { name: 'J', x: '-45%', y: '29%', r: '-12deg', outX: '-95vw', outY: '25vh', contour: 'polygon(0% 58%, 12.8% 58%, 13.2% 30%, 19.2% 30%, 19.2% 61%, 17.2% 70%, 12.5% 74%, 5% 72%, 0% 65%)' },
-  { name: 'XX', x: '-12%', y: '-64%', r: '16deg', outX: '-38vw', outY: '-74vh', contour: 'polygon(16.8% 20.5%, 23.6% 23%, 29.5% 40%, 35.7% 20.5%, 41.5% 36.5%, 49.5% 23.5%, 55.2% 20.5%, 44.4% 49.8%, 58% 86%, 50.6% 79%, 43.8% 63%, 37% 85%, 35.3% 85%, 28.7% 64%, 21% 80%, 13.4% 86%, 25.7% 50%)' },
-  { name: 'M', x: '16%', y: '62%', r: '-19deg', outX: '18vw', outY: '86vh', contour: 'polygon(51% 35%, 57.4% 38.7%, 61.5% 48.7%, 66% 38.5%, 68.5% 35.5%, 69.3% 37.5%, 69.3% 73%, 64% 73%, 64% 56%, 61.4% 63%, 57% 54%, 57% 73%, 52.5% 71%, 51% 45%)' },
-  { name: 'A', x: '32%', y: '-52%', r: '14deg', outX: '58vw', outY: '-75vh', contour: 'polygon(67% 73%, 75.7% 35%, 78% 35%, 86.3% 73%, 81.5% 73%, 79.5% 65%, 73% 65%, 70.5% 73%)' },
-  { name: 'L', x: '53%', y: '28%', r: '-10deg', outX: '105vw', outY: '28vh', contour: 'polygon(83.8% 30%, 90% 30%, 90% 59%, 100% 59%, 100% 67%, 96.5% 73%, 83.8% 73%)' },
+type Cut = readonly (readonly [number, number])[];
+// Shared contours partition the complete transparent PNG between its glyphs.
+// Every original pixel stays in one moving layer for the entire sequence;
+// there is no crossfade to another wordmark that changes its alpha or shape.
+const CUTS: readonly Cut[] = [
+  [[0, 0], [0, 743]],
+  [[359, 0], [359, 218], [391, 229], [405, 257], [409, 290], [407, 463], [401, 495], [388, 502], [386, 517], [370, 524], [367, 539], [359, 545], [331, 552], [331, 576], [300, 616], [304, 631], [337, 638], [337, 743]],
+  [[1140, 0], [1140, 160], [1155, 170], [1175, 174], [1177, 205], [1175, 210], [1159, 214], [1159, 243], [1153, 259], [1125, 264], [1125, 270], [1101, 275], [1090, 284], [1088, 411], [1091, 418], [1209, 438], [1213, 576], [1219, 577], [1223, 590], [1239, 601], [1239, 621], [1148, 637], [1148, 743]],
+  [[1438, 0], [1438, 257], [1447, 267], [1461, 271], [1467, 305], [1467, 486], [1457, 495], [1457, 501], [1446, 505], [1447, 532], [1438, 536], [1438, 743]],
+  [[1759, 0], [1759, 389], [1762, 418], [1771, 426], [1772, 435], [1786, 440], [1786, 481], [1792, 488], [1702, 505], [1698, 510], [1698, 526], [1736, 538], [1736, 544], [1747, 550], [1747, 743]],
+  [[2117, 0], [2117, 743]],
 ];
+const partition = (left: Cut, right: Cut) => `polygon(${[...left, ...[...right].reverse()].map(([x, y]) => `${x / 2117 * 100}% ${y / 743 * 100}%`).join(', ')})`;
+const GLYPHS = [
+  { name: 'J', x: '-45%', y: '29%', r: '-12deg', outX: '-95vw', outY: '25vh' },
+  { name: 'XX', x: '-12%', y: '-64%', r: '16deg', outX: '-38vw', outY: '-74vh' },
+  { name: 'M', x: '16%', y: '62%', r: '-19deg', outX: '18vw', outY: '86vh' },
+  { name: 'A', x: '32%', y: '-52%', r: '14deg', outX: '58vw', outY: '-75vh' },
+  { name: 'L', x: '53%', y: '28%', r: '-10deg', outX: '105vw', outY: '28vh' },
+].map((glyph, index) => ({ ...glyph, contour: partition(CUTS[index], CUTS[index + 1]) }));
 
 /** A first-visit brand moment; CSS keeps the sequence independent of page loading. */
 export default function SonicIntro({ done }: { done: () => void }) {
@@ -62,7 +73,6 @@ export default function SonicIntro({ done }: { done: () => void }) {
           <div className="sonic-logo__rail sonic-logo__rail--top" /><div className="sonic-logo__rail sonic-logo__rail--bottom" />
           {artwork ? <>
             {GLYPHS.map((glyph, index) => <div key={glyph.name} className="sonic-logo__glyph" style={{ '--glyph-x': glyph.x, '--glyph-y': glyph.y, '--glyph-r': glyph.r, '--glyph-out-x': glyph.outX, '--glyph-out-y': glyph.outY, '--glyph-delay': `${index * 28}ms`, clipPath: glyph.contour } as CSSProperties}><img src={LOGO} alt="" width="2117" height="743" draggable={false} /></div>)}
-            <img className="sonic-logo__whole" src={LOGO} alt="" width="2117" height="743" draggable={false} />
             <div className="sonic-logo__reflection"><div /></div>
           </> : ready ? <span className="sonic-logo__fallback">JXXMAL</span> : null}
         </div>
