@@ -66,7 +66,7 @@ The three originally requested singles have Tidal and Amazon Music links verifie
 
 ## Location and privacy
 
-`GET /api/location` uses Vercel's existing approximate IP geolocation headers, rounds the displayed coordinates to one decimal place, and returns a private, noncached response. It does not ask for GPS permission, contact a third-party location API, store an IP or location, or claim to count worldwide listeners. Vercel does not supply those headers on localhost; the map correctly shows the unavailable state there. Confirm the live dot on a Vercel preview deployment.
+The shared audience map uses `GET/POST /api/visitors` and the dedicated `supabase/visitor-map.sql` migration. It accumulates coarse visitor areas using Vercel geolocation and offers an explicit browser location-permission button. Exact GPS coordinates are rounded before transmission; public responses show only combined 2° grid cells. See [AUDIENCE-MAP.md](AUDIENCE-MAP.md) for storage, permissions and verification. The older `GET /api/location` endpoint remains available but is no longer used by the map.
 
 ## Verification
 

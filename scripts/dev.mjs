@@ -2,7 +2,7 @@ import http from 'node:http';
 import { createServer, loadEnv } from 'vite';
 
 Object.assign(process.env, loadEnv('development', process.cwd(), ''));
-const routes = new Set(['subscribe', 'preview', 'links', 'platforms', 'location', 'now-playing', 'callback']);
+const routes = new Set(['subscribe', 'preview', 'links', 'platforms', 'location', 'visitors', 'now-playing', 'callback']);
 const vite = await createServer({ server: { middlewareMode: true, watch: { usePolling: true, interval: 300 } }, appType: 'spa' });
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
