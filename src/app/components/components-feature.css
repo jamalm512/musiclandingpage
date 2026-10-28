@@ -1,0 +1,42 @@
+.fan-signup { width: 100%; max-width: 590px; }
+.fan-signup__label { display: block; margin-bottom: 12px; color: #b6bab1; font-size: 12px; line-height: 1.5; letter-spacing: .03em; }
+.fan-signup__row { display: flex; min-height: 56px; border: 1px solid #42463d; background: #141612; }
+.fan-signup__row:focus-within { border-color: #d7ff3f; }
+.fan-signup__row input { flex: 1; min-width: 0; padding: 15px 18px; border: 0; border-radius: 0; outline: none; background: transparent; color: #f4f2ea; font-family: inherit; font-size: 16px; line-height: 1.5; }
+.fan-signup__row input::placeholder { color: #969993; opacity: 1; }
+.fan-signup__row input:disabled { opacity: .65; }
+.fan-signup__row button { display: flex; align-items: center; justify-content: center; gap: 18px; min-height: 54px; padding: 14px 20px; border: 0; border-radius: 0; background: #d7ff3f; color: #0b0c0c; font-family: inherit; font-size: 12px; font-weight: 600; line-height: 1.4; letter-spacing: .02em; white-space: nowrap; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; transition: transform 120ms var(--ease-out, cubic-bezier(.23,1,.32,1)), background-color 160ms ease; }
+.fan-signup__row button:active { transform: scale(.97); }
+.fan-signup__row button:focus-visible { outline: 2px solid #f4f2ea; outline-offset: -5px; }
+.fan-signup__row button:disabled { cursor: wait; opacity: .65; }
+.fan-signup__message { min-height: 2.8em; margin: 12px 0 0; color: #969993; font-size: 11px; line-height: 1.6; }
+.fan-signup__message--success { color: #d7ff3f; }
+.fan-signup__message--error { color: #ffb7a4; }
+.fan-signup__honeypot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.fan-map { width: 100%; }
+.fan-map__surface { position: relative; overflow: hidden; }
+.fan-map__svg { display: block; width: 100%; height: auto; }
+.fan-map__origin-label { fill: #d7ff3f; font-family: inherit; font-size: 10px; font-weight: 500; letter-spacing: 1.5px; }
+.fan-map__pulse { transform-box: fill-box; transform-origin: center; animation: fan-map-pulse 3s ease-out infinite; }
+.fan-map__caption { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding-top: 18px; border-top: 1px solid #282c26; }
+.fan-map__legend { display: flex; flex-wrap: wrap; gap: 12px 22px; flex: 0 0 auto; }
+.fan-map__legend span { display: inline-flex; align-items: center; gap: 8px; color: #c8ccc2; font-size: 11px; line-height: 1.6; }
+.fan-map__key { display: block; width: 5px; height: 5px; border-radius: 50%; }
+.fan-map__key--home { background: #d7ff3f; }
+.fan-map__key--visitor { background: #f4f2ea; }
+.fan-map__caption p { max-width: 350px; margin: 0; color: #969993; text-align: right; font-size: 11px; line-height: 1.6; }
+@keyframes fan-map-pulse { from { transform: scale(.55); opacity: .8; } to { transform: scale(1.5); opacity: 0; } }
+@media (hover: hover) and (pointer: fine) { .fan-signup__row button:hover:not(:disabled) { background: #e3ff7c; } }
+@media (max-width: 580px) {
+  .fan-signup__row { flex-wrap: wrap; border: 0; gap: 10px; background: transparent; }
+  .fan-signup__row input { flex-basis: 100%; min-height: 54px; border: 1px solid #42463d; background: #141612; }
+  .fan-signup__row input:focus-visible { border-color: #d7ff3f; outline: 1px solid #d7ff3f; outline-offset: -1px; }
+  .fan-signup__row button { width: 100%; justify-content: space-between; }
+  .fan-map__caption { flex-direction: column; gap: 12px; }
+  .fan-map__caption p { text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fan-map__pulse { animation: none; opacity: .35; }
+  .fan-signup__row button { transition-duration: 0ms; }
+  .fan-signup__row button:active { transform: none; }
+}
