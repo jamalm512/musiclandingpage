@@ -216,7 +216,6 @@ test('YouTube without credentials has no fabricated subscriber count', async () 
   await platforms({ method: 'GET' }, res);
   assert.equal(res.body.youtube.subscriberCount, null);
   assert.deepEqual(res.body.youtube.videos, []);
-  assert.equal(res.body.instagram.followers, 127);
 });
 
 test('YouTube live count and uploads are fetched server-side and cached', async () => {
@@ -249,159 +248,30 @@ test('YouTube upstream failure leaves working profile links and no fake data', a
   assert.equal(res.body.youtube.subscriberCount, null);
 });
 
-function clearPlatformCredentials() {
-  for (const key of ['YOUTUBE_API_KEY', 'IG_ACCESS_TOKEN', 'IG_USER_ID', 'IG_GRAPH_VERSION', 'SOUNDCHARTS_APP_ID', 'SOUNDCHARTS_API_KEY']) delete process.env[key];
-}
-const soundchartsUuid = '12345678-1234-1234-1234-123456789abc';
-
-test('unconfigured platform counts are explicitly dated snapshots and make no external requests', async () => {
-  clearPlatformCredentials(); noNetwork();
-  const { default: platforms } = await import('../api/platforms.js?snapshots');
-  const res = response(); await platforms({ method: 'GET' }, res);
-  assert.equal(res.body.instagram.followers, 127);
-  assert.equal(res.body.instagram.automatic, false);
-  assert.equal(res.body.instagram.updatedAt, '2026-10-27');
-  assert.equal(res.body.spotify.monthlyListeners, 192);
-  assert.equal(res.body.spotify.automatic, false);
-  assert.equal(res.body.spotify.updatedAt, '2026-10-27');
-  assert.match(res.headers['cache-control'], /s-maxage=900/);
-  const post = response(); await platforms({ method: 'POST' }, post);
-  assert.equal(post.statusCode, 405);
-});
-
-test('Instagram uses authorized professional profile, accepts zero followers and deduplicates requests', async () => {
-  clearPlatformCredentials();
-  process.env.IG_ACCESS_TOKEN = 'private-instagram-test-token';
-  process.env.IG_USER_ID = '123456789';
-  let calls = 0;
-  globalThis.fetch = async (url, options) => {
-    calls++;
-    const parsed = new URL(url);
-    assert.equal(parsed.origin, 'https://graph.instagram.com');
-    assert.equal(parsed.pathname, '/v24.0/123456789');
-    assert.equal(parsed.searchParams.get('fields'), 'id,username,followers_count');
-    assert.equal(parsed.searchParams.get('access_token'), null);
-    assert.equal(options.headers.Authorization, 'Bearer private-instagram-test-token');
-    assert.ok(options.signal instanceof AbortSignal);
-    return Response.json({ id: '123456789', username: 'JXXMALMUSIK', followers_count: 0 });
-  };
-  const { default: platforms } = await import('../api/platforms.js?instagram-zero');
-  const first = response(), second = response();
-  await Promise.all([platforms({ method: 'GET' }, first), platforms({ method: 'GET' }, second)]);
-  assert.equal(first.body.instagram.followers, 0);
-  assert.equal(first.body.instagram.automatic, true);
-  assert.equal(calls, 1);
-  assert.ok(!JSON.stringify(first.body).includes('private-instagram-test-token'));
-  assert.deepEqual(second.body.instagram, first.body.instagram);
-});
-
-test('Instagram rejects another account, malformed counts and expired authorization without leaking upstream details', async () => {
-  clearPlatformCredentials(); process.env.IG_ACCESS_TOKEN = 'private-instagram-test-token';
-  const cases = [
-    { username: 'another_artist', followers_count: 999 },
-    { username: 'jxxmalmusik', followers_count: true },
-    { username: 'jxxmalmusik', followers_count: -1 },
-    { error: { message: 'private-instagram-test-token revoked' } },
-  ];
-  for (const [index, profile] of cases.entries()) {
-    globalThis.fetch = async () => Response.json(profile, { status: profile.error ? 401 : 200 });
-    const { default: platforms } = await import(`../api/platforms.js?instagram-rejected-${index}`);
-    const res = response(); await platforms({ method: 'GET' }, res);
-    assert.equal(res.body.instagram.followers, 127);
-    assert.equal(res.body.instagram.automatic, false);
-    assert.equal(res.body.instagram.updatedAt, '2026-10-27');
-    assert.ok(!JSON.stringify(res.body).includes('private-instagram-test-token'));
-  }
-});
-
-test('Instagram marks an expired cached result stale after failure and eventually returns the dated snapshot', async () => {
-  clearPlatformCredentials(); process.env.IG_ACCESS_TOKEN = 'test-token';
-  let now = originalNow(); Date.now = () => now;
-  globalThis.fetch = async () => Response.json({ username: 'jxxmalmusik', followers_count: 150 });
-  const { default: platforms } = await import('../api/platforms.js?instagram-stale');
-  const first = response(); await platforms({ method: 'GET' }, first);
-  now += 16 * 60000;
-  globalThis.fetch = async () => { throw new Error('Provider offline'); };
-  const stale = response(); await platforms({ method: 'GET' }, stale);
-  assert.equal(stale.body.instagram.followers, 150);
-  assert.equal(stale.body.instagram.stale, true);
-  assert.equal(stale.body.instagram.updatedAt, first.body.instagram.updatedAt);
-  now += 86400000;
-  const old = response(); await platforms({ method: 'GET' }, old);
-  assert.equal(old.body.instagram.followers, 127);
-  assert.equal(old.body.instagram.automatic, false);
-});
-
-test('Spotify resolves the exact artist and uses Soundcharts monthly listeners, never follower data', async () => {
-  clearPlatformCredentials();
-  process.env.SOUNDCHARTS_APP_ID = 'private-soundcharts-app';
-  process.env.SOUNDCHARTS_API_KEY = 'private-soundcharts-key';
-  let calls = 0;
-  const date = new Date(originalNow() - 86400000).toISOString();
-  globalThis.fetch = async (url, options) => {
-    calls++;
-    assert.equal(options.headers['x-app-id'], 'private-soundcharts-app');
-    assert.equal(options.headers['x-api-key'], 'private-soundcharts-key');
-    const parsed = new URL(url);
-    assert.equal(parsed.origin, 'https://customer.api.soundcharts.com');
-    if (parsed.pathname.includes('/by-platform/')) {
-      assert.equal(parsed.pathname, '/api/v2/artist/by-platform/spotify/0pYbVdhffwzvHfEBdeFEUC');
-      return Response.json({ object: { uuid: soundchartsUuid } });
+test('artist-maintained Instagram and Spotify counts need no authorization and ignore legacy provider credentials', async () => {
+  delete process.env.YOUTUBE_API_KEY;
+  const cases = [false, true];
+  for (const configured of cases) {
+    for (const key of ['IG_ACCESS_TOKEN', 'IG_USER_ID', 'IG_GRAPH_VERSION', 'SOUNDCHARTS_APP_ID', 'SOUNDCHARTS_API_KEY']) {
+      if (configured) process.env[key] = 'unused-provider-test-secret';
+      else delete process.env[key];
     }
-    assert.equal(parsed.pathname, `/api/v2/artist/${soundchartsUuid}/streaming/spotify/listening`);
-    assert.equal(parsed.searchParams.get('sort'), 'desc');
-    assert.equal(parsed.searchParams.get('limit'), '1');
-    return Response.json({ items: [{ value: 321, date, followers: 9999 }] });
-  };
-  const { default: platforms } = await import('../api/platforms.js?spotify-monthly');
-  const first = response(); await platforms({ method: 'GET' }, first);
-  const second = response(); await platforms({ method: 'GET' }, second);
-  assert.equal(first.body.spotify.monthlyListeners, 321);
-  assert.equal(first.body.spotify.automatic, true);
-  assert.equal(first.body.spotify.updatedAt, date);
-  assert.equal(first.body.spotify.stale, false);
-  assert.equal(first.body.spotify.followers, undefined);
-  assert.equal(calls, 2);
-  assert.ok(!JSON.stringify(first.body).includes('private-soundcharts'));
-});
-
-test('invalid Soundcharts data falls back honestly while a working Instagram count still updates', async () => {
-  clearPlatformCredentials();
-  process.env.IG_ACCESS_TOKEN = 'test-token';
-  process.env.SOUNDCHARTS_APP_ID = 'test-app'; process.env.SOUNDCHARTS_API_KEY = 'test-key';
-  const cases = [
-    { items: [{ followers: 543, date: new Date().toISOString() }] },
-    { items: [{ value: true, date: new Date().toISOString() }] },
-    { items: [{ value: 543, date: 'invalid' }] },
-    { items: [{ value: 543, date: new Date(originalNow() + 2 * 86400000).toISOString() }] },
-    { error: 'API access denied' },
-  ];
-  for (const [index, audience] of cases.entries()) {
-    globalThis.fetch = async (url) => {
-      if (String(url).includes('graph.instagram.com')) return Response.json({ username: 'jxxmalmusik', followers_count: 160 });
-      if (String(url).includes('/by-platform/')) return Response.json({ object: { uuid: soundchartsUuid } });
-      return Response.json(audience, { status: audience.error ? 403 : 200 });
-    };
-    const { default: platforms } = await import(`../api/platforms.js?spotify-invalid-${index}`);
+    noNetwork();
+    const { default: platforms } = await import(`../api/platforms.js?manual-counts-${configured}`);
     const res = response(); await platforms({ method: 'GET' }, res);
+    assert.equal(res.body.instagram.followers, 245);
     assert.equal(res.body.spotify.monthlyListeners, 192);
-    assert.equal(res.body.spotify.automatic, false);
-    assert.equal(res.body.instagram.followers, 160);
-    assert.equal(res.body.instagram.automatic, true);
+    for (const metric of [res.body.instagram, res.body.spotify]) {
+      assert.equal(metric.automatic, false);
+      assert.equal(metric.available, true);
+      assert.equal(metric.source, 'artist-provided');
+      assert.equal(metric.updatedAt, '2026-10-28');
+    }
+    assert.ok(!JSON.stringify(res.body).includes('unused-provider-test-secret'));
+    assert.match(res.headers['cache-control'], /s-maxage=900/);
+    const post = response(); await platforms({ method: 'POST' }, post);
+    assert.equal(post.statusCode, 405);
   }
-});
-
-test('Soundcharts old but valid measurements are marked stale and zero is a real monthly-listener count', async () => {
-  clearPlatformCredentials();
-  process.env.SOUNDCHARTS_APP_ID = 'test-app'; process.env.SOUNDCHARTS_API_KEY = 'test-key';
-  globalThis.fetch = async (url) => String(url).includes('/by-platform/')
-    ? Response.json({ object: { uuid: soundchartsUuid } })
-    : Response.json({ items: [{ value: 0, date: new Date(originalNow() - 8 * 86400000).toISOString() }] });
-  const { default: platforms } = await import('../api/platforms.js?spotify-old-zero');
-  const res = response(); await platforms({ method: 'GET' }, res);
-  assert.equal(res.body.spotify.monthlyListeners, 0);
-  assert.equal(res.body.spotify.stale, true);
-  assert.equal(res.body.spotify.automatic, true);
 });
 
 test('legacy Spotify endpoints never expose account credentials or fetch account data', async () => {

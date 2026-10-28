@@ -14,11 +14,6 @@ Set these server-side variables in Vercel for the environments you deploy to:
 | `SUPABASE_ANON_KEY` | Project's anonymous/publishable API key | Email signups |
 | `YOUTUBE_API_KEY` | YouTube Data API v3 key | Live subscriber count and latest uploads |
 | `YOUTUBE_CHANNEL_HANDLE` | `JXXMALMUSIK` (default) | Optional override |
-| `IG_ACCESS_TOKEN` | Authorized Instagram Login user token for `@jxxmalmusik` | Automatic Instagram follower count |
-| `IG_USER_ID` | Instagram professional user ID; defaults to `me` | Optional explicit account ID |
-| `IG_GRAPH_VERSION` | Supported Meta Graph version; defaults to `v24.0` | Optional override |
-| `SOUNDCHARTS_APP_ID` | Soundcharts production API application ID | Automatic Spotify monthly listeners |
-| `SOUNDCHARTS_API_KEY` | Soundcharts production API key | Automatic Spotify monthly listeners |
 | `SPOTIFY_CLIENT_ID` | Spotify app client ID | Optional preview fallback |
 | `SPOTIFY_CLIENT_SECRET` | Spotify app client secret | Optional preview fallback |
 
@@ -42,13 +37,11 @@ Saving addresses does not itself send email. A release announcement/newsletter s
 
 ## Platform counts
 
-`GET /api/platforms` fetches each service independently on the server. YouTube and Instagram responses are cached for 15 minutes; Soundcharts data is cached for six hours. The public response contains counts, source, date, and availability, never credentials. Failed providers do not prevent other counts from updating. A recent cached response can be used for up to 24 hours after a provider failure, with `stale: true`; otherwise the route returns the saved dated snapshot or an unavailable state.
+`GET /api/platforms` fetches YouTube subscribers and recent uploads on the server, cached for 15 minutes. The public response contains counts, source, date and availability, never credentials. If YouTube fails, a recent cached result can be used for up to 24 hours with `stale: true`; otherwise its count becomes unavailable.
 
-Instagram requires the artist to authorize a Meta app through **Instagram API with Instagram Login** with `instagram_business_basic`. The account was confirmed as Creator/Business, but account type alone does not grant API authorization. Generate an authorized long-lived Instagram User token, then enter `IG_ACCESS_TOKEN` and optionally `IG_USER_ID` directly in Vercel's environment settings. This implementation uses `graph.instagram.com`, not a Facebook Login/Page token. It accepts only a response whose username is `jxxmalmusik`, including zero followers. Meta access tokens expire or can be revoked: renew the token through Meta before expiry and update Vercel; automatic token renewal/storage is not part of this implementation. A rejected or missing token falls back to the artist-provided **127 followers, dated October 27, 2026**, visibly presented as a saved count.
+Instagram followers and Spotify monthly listeners are maintained manually at the artist's request. The current values are **245 Instagram followers** and **192 Spotify monthly listeners**, supplied October 28, 2026. Both the frontend and API read `src/data/platform-snapshots.json`; neither Meta nor Soundcharts credentials are required or used, even if old credentials remain configured.
 
-Spotify's standard artist API does **not** provide monthly listeners. Followers and popularity are different metrics and are never substituted. The supported automatic source is Soundcharts' Spotify streaming-audience endpoint, which reports Spotify's rolling 28-day monthly listeners. Enter production `SOUNDCHARTS_APP_ID` and `SOUNDCHARTS_API_KEY` if the artist has access; a dashboard subscription alone does not establish API access, and the public sandbox is limited to its test dataset. The code resolves JXXMAL by the exact Spotify artist ID before requesting the latest point. Artist coverage, production permission, and the returned count must be verified after credentials are configured. No paid service has been purchased or enabled. Without working access, the tile uses **192 monthly listeners, verified from the artist profile October 27, 2026**, with its date. Update `src/data/platform-snapshots.json` when manually verifying newer values.
-
-After adding provider variables, redeploy to apply them. Verify `/api/platforms` reports `automatic: true` for the intended service and a current timestamp, and verify the public tile renders that count. A dated saved count is not evidence that authorization succeeded.
+When the artist supplies new counts, update the relevant number and `updatedAt` date in that JSON file, keep `source` as `artist-provided`, then build and deploy. Confirm the tiles and `/api/platforms` show the supplied values with `automatic: false`. YouTube remains automatic.
 
 ## Release catalog and audio
 
@@ -86,12 +79,7 @@ Publish through the existing Vercel deployment workflow after verifying the rele
 - [Vercel geolocation headers](https://vercel.com/kb/guide/geo-ip-headers-geolocation-vercel-functions)
 - [YouTube channels lookup by handle](https://developers.google.com/youtube/data/reference/rest/v3/channels/list)
 - [YouTube uploads playlist items](https://developers.google.com/youtube/data/reference/rest/v3/playlistItems/list)
-- [Meta Instagram user fields, hosts and permissions](https://developers.facebook.com/docs/instagram-platform/instagram-graph-api/reference/ig-user/)
-- [Meta Instagram Login setup](https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/)
 - [Spotify artist API response fields](https://developer.spotify.com/documentation/web-api/reference/get-an-artist)
-- [Soundcharts Spotify monthly-listener endpoint](https://developers.soundcharts.com/api/reference/artist/get-streaming-audience)
-- [Soundcharts exact platform-ID lookup](https://developers.soundcharts.com/api/reference/artist/get-artist-by-platform-id)
-- [Soundcharts production API access and sandbox limits](https://help.soundcharts.com/en/articles/10091349-how-can-i-get-access-to-soundcharts-api)
 - [Spotify track reference: nullable/deprecated preview URL](https://developer.spotify.com/documentation/web-api/reference/get-track)
 - [Songlink/Odesli API deprecation notice](https://linktree.notion.site/API-d0ebe08a5e304a55928405eb682f6741)
 - [Supabase row-level security](https://supabase.com/docs/guides/database/postgres/row-level-security)

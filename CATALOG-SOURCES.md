@@ -55,9 +55,8 @@ The inspected Songlink response was for country `GD`; it did not supply Apple or
 
 ## Maintained values
 
-- Instagram's artist-provided **127 followers** is a saved fallback dated October 27, 2026. The server supports automatic follower counts after authorizing the professional `@jxxmalmusik` account through Meta; account type is confirmed, API authorization remains required.
-- Spotify's **192 monthly listeners** is a saved snapshot verified from the artist profile October 27, 2026. Monthly listeners are not exposed by Spotify's standard artist API. The optional automatic source is [Soundcharts streaming audience](https://developers.soundcharts.com/api/reference/artist/get-streaming-audience), which reports Spotify's rolling 28-day listeners; production API access and artist coverage still need verification. Followers are never substituted for listeners.
-- YouTube subscriber totals come from the server-side platform endpoint when configured. No follower, listener, or subscriber count from these research snapshots is hardcoded as a live metric.
+- Instagram's **245 followers** and Spotify's **192 monthly listeners** were supplied by the artist on October 28, 2026. Both are maintained manually in `src/data/platform-snapshots.json`, with the update date displayed. Meta and Soundcharts authorization are not used.
+- YouTube subscriber totals come from the server-side platform endpoint when configured. Manual follower and listener counts are not described as live metrics.
 - `releases.json` is the shared catalog for the frontend and API routes; `music.ts` supplies its TypeScript type and artist links.
 
 Production artwork is encoded as WebP at the original dimensions to reduce transfer size; the subjects and designs are unchanged.
