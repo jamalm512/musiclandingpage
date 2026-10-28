@@ -41,3 +41,5 @@ html[data-keyboard] .music-dialog{animation:none}html[data-keyboard] .record-fli
 .platform-card__updated{display:block;margin-top:8px;color:#a2a59a;font-size:10px;line-height:1.45;letter-spacing:.025em}.platform-card__detail{line-height:1.5}
 
 .bounce-copy h2.upcoming-release-title{font-size:clamp(70px,8.5vw,116px);line-height:.88;letter-spacing:-.025em}.upcoming-release-title>span{vertical-align:top}@media(max-width:580px){.bounce-copy h2.upcoming-release-title{font-size:clamp(76px,22vw,104px)}}
+
+.grenada-mark{display:block;flex-shrink:0}.chapter-strip i>svg{display:block}.upcoming-release-title>span>svg{display:block}.desktop-nav a>span{display:inline-flex;vertical-align:middle}.preview-credit,.preview-bar__info a,.footer-bottom>a:last-child{display:inline-flex;align-items:center;gap:4px}.preview-credit>svg,.preview-bar__info a>svg{flex-shrink:0}
